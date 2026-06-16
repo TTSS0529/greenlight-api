@@ -14,6 +14,8 @@ func (app *application) routes() *httprouter.Router {
 	route.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthcheckHandler)
 	route.HandlerFunc(http.MethodPost, "/v1/movies", app.createMovieHandler)
 	route.HandlerFunc(http.MethodGet, "/v1/movies/:id", app.showMovieHandler)
+	route.HandlerFunc(http.MethodPut, "/v1/movies/:id", app.updateMovieHandler)
+	route.HandlerFunc(http.MethodDelete, "/v1/movies/:id", app.deleteMovieHandler)
 
 	return route
 }

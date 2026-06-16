@@ -10,6 +10,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/TTSS0529/greenlight-api/internal/data"
 	_ "github.com/lib/pq"
 )
 
@@ -27,6 +28,7 @@ type config struct {
 type application struct {
 	config config
 	logger *log.Logger
+	models data.Models
 }
 
 const version = "1.0.0"
@@ -52,6 +54,7 @@ func main() {
 	app := &application{
 		config: cfg,
 		logger: logger,
+		models: data.NewModels(db),
 	}
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.port),
