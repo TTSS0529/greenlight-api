@@ -15,6 +15,8 @@ var (
 	ErrDuplicateEmail = errors.New("duplicate email")
 )
 
+var AnonymousUser = &User{}
+
 type UserModel struct {
 	DB *sql.DB
 }
@@ -190,4 +192,8 @@ AND tokens.expiry > $3`
 		}
 	}
 	return &user, nil
+}
+
+func (u *User) IsAnonymous() bool {
+	return u == AnonymousUser
 }
