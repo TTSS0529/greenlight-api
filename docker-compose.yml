@@ -1,0 +1,81 @@
+services:
+
+  api:
+    build:
+      context: .
+    container_name: greenlight-api
+    environment:
+      GREENLIGHT_DB_DSN: postgres://greenlight:${POSTGRES_PASSWORD}@db:5432/greenlight?sslmode=disable
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "4000"
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: greenlight-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api:
+        condition: service_started
+
+  db:
+    image: postgres:17
+    container_name: greenlight-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: greenlight
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: greenlight
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U greenlight -d greenlight"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  migration:
+    image: migrate/migrate
+    volumes:
+      - ./migrations:/migrations
+    command:
+      [
+        "-path",
+        "/migrations",
+        "-database",
+        "postgres://greenlight:${POSTGRES_PASSWORD}@db:5432/greenlight?sslmode=disable",
+        "up"
+      ]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  seed:
+    build:
+      context: .
+    command:
+      - seed
+    environment:
+      GREENLIGHT_DB_DSN: postgres://greenlight:${POSTGRES_PASSWORD}@db:5432/greenlight?sslmode=disable
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:

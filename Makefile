@@ -78,3 +78,49 @@ build/api:
 	@echo 'Building cmd/api...'
 	go build -ldflags=${linker_flags} -o=./bin/api ./cmd/api
 	GOOS=linux GOARCH=amd64 go build -ldflags=${linker_flags} -o=./bin/linux_amd64/api ./cmd/api
+
+# ==================================================================================== #
+# DEPLOY
+# ==================================================================================== #
+
+## docker/deploy: build docker images, run database migrations and start services
+.PHONY: docker/build
+docker/build:
+	docker compose build \
+		--build-arg BUILD_TIME="${current_time}" \
+		--build-arg VERSION="${git_description}"
+
+## docker/up: build and start all services
+.PHONY: docker/up
+docker/up:
+	docker compose up -d db
+	docker compose run --rm migration
+	docker compose run --rm seed
+	docker compose up -d api caddy
+
+## docker/deploy: build and start all services
+.PHONY: docker/deploy
+docker/deploy: docker/build docker/up
+
+## docker/down: stop all services
+.PHONY: docker/down
+docker/down:
+	docker compose down
+
+## docker/down/v: stop services and remove volumes
+.PHONY: docker/down/v
+docker/down/v:
+	docker compose down -v
+
+## docker/redeploy: rebuild and redeploy
+.PHONY: docker/redeploy
+docker/redeploy: docker/down docker/build docker/up
+
+## docker/reset: rebuild everything from scratch
+.PHONY: docker/reset
+docker/reset: docker/down/v docker/build docker/up
+
+## docker/logs: print log infos
+.PHONY: docker/logs
+docker/logs:
+	docker compose logs -f

@@ -1,0 +1,39 @@
+# Git
+.git
+.gitignore
+
+# Environment / secrets
+.env
+.envrc
+
+# Build artifacts
+bin/
+
+# Editor / IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+temp/
+
+# Documentation (not needed for build)
+README.md
+LICENSE
+
+# Test output / coverage
+coverage.out
+*.cover
+
+# CI files (if any)
+.github/
+
+# vendor
+vendor/
