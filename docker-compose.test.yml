@@ -1,0 +1,37 @@
+services:
+  db-test:
+    image: postgres:17
+    container_name: greenlight-postgres-test
+    environment:
+      POSTGRES_USER: greenlight
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: greenlight_test
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U greenlight -d greenlight_test"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  test:
+    image: golang:1.26
+    container_name: greenlight-test
+    working_dir: /app
+    volumes:
+      - .:/app
+    environment:
+      GREENLIGHT_DB_DSN: postgres://greenlight:${POSTGRES_PASSWORD}@db-test:5432/greenlight_test?sslmode=disable
+    depends_on:
+      db-test:
+        condition: service_healthy
+    command:
+      - sh
+      - -c
+      - |
+        go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+        migrate -path ./migrations \
+          -database "$$GREENLIGHT_DB_DSN" up
+        go test -v -tags=integration -race -vet=off ./...

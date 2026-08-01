@@ -194,6 +194,7 @@ AND tokens.expiry > $3`
 	return &user, nil
 }
 
+// here compare the address between u and AnonymousUser not content!!!
 func (u *User) IsAnonymous() bool {
 	return u == AnonymousUser
 }

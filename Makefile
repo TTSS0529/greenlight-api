@@ -64,6 +64,11 @@ vendor:
 	@echo 'Vendoring dependencies...'
 	go mod vendor
 
+## test: run integration tests
+.PHONY: test
+test:
+	docker compose -f docker-compose.test.yml up --abort-on-container-exit --exit-code-from test
+
 # ==================================================================================== #
 # BUILD
 # ==================================================================================== #
