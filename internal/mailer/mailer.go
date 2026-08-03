@@ -12,9 +12,15 @@ import (
 //go:embed "templates"
 var templateFS embed.FS
 
+type smtpSender interface {
+	DialAndSend(...*mail.Message) error
+}
+
 type Mailer struct {
-	dialer *mail.Dialer
-	sender string
+	dialer     smtpSender
+	sender     string
+	sleep      func(time.Duration)
+	newMessage func() *mail.Message
 }
 
 func New(host string, port int, username, password, sender string) Mailer {
@@ -23,11 +29,15 @@ func New(host string, port int, username, password, sender string) Mailer {
 	return Mailer{
 		dialer: dialer,
 		sender: sender,
+		sleep:  time.Sleep,
+		newMessage: func() *mail.Message {
+			return mail.NewMessage()
+		},
 	}
 }
 
 func (m Mailer) Send(recipient, templateFile string, data any) error {
-	tmpl, err := template.New("email").ParseFS(templateFS, "templates/"+templateFile)
+	tmpl, err := template.New("email").Option("missingkey=error").ParseFS(templateFS, "templates/"+templateFile)
 	if err != nil {
 		return err
 	}
@@ -46,7 +56,7 @@ func (m Mailer) Send(recipient, templateFile string, data any) error {
 	if err != nil {
 		return err
 	}
-	msg := mail.NewMessage()
+	msg := m.newMessage()
 	msg.SetHeader("To", recipient)
 	msg.SetHeader("From", m.sender)
 	msg.SetHeader("Subject", subject.String())
@@ -57,7 +67,7 @@ func (m Mailer) Send(recipient, templateFile string, data any) error {
 		if nil == err {
 			return nil
 		}
-		time.Sleep(500 * time.Millisecond)
+		m.sleep(500 * time.Millisecond)
 	}
 	return err
 }
