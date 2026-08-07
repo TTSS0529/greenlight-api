@@ -1,0 +1,33 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+
+      - name: Install tools
+        run: |
+          go install honnef.co/go/tools/cmd/staticcheck@latest
+          go install github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+
+      - name: Audit
+        run: make audit
+
+      - name: Integration tests
+        run: make test
+
+      - name: Cleanup
+        if: always()
+        run: make docker/down/v

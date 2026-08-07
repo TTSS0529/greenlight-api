@@ -20,3 +20,14 @@ In a larger production system, I would combine integration tests with unit tests
 - JSON marshaling with indentation: ~2.3μs/op
 - Token generation: ~350ns/op
 - Password hashing (bcrypt): ~270ms/op
+
+## Continuous Integration
+
+Every push runs:
+
+- gofmt
+- go vet
+- staticcheck
+- unit tests
+- race detector
+- PostgreSQL integration tests
