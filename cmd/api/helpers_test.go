@@ -5,9 +5,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -293,5 +296,125 @@ func TestBackgroundRecover(t *testing.T) {
 	case <-done:
 	case <-time.After(time.Second):
 		t.Fatal("background blocked")
+	}
+}
+
+func newTestApplicationBench(b *testing.B) *application {
+	b.Helper()
+
+	return &application{
+		logger: jsonlog.New(io.Discard, jsonlog.LevelInfo),
+	}
+}
+
+func BenchmarkWriteJSON(b *testing.B) {
+	app := newTestApplicationBench(b)
+
+	data := envelope{
+		"movie": map[string]any{
+			"id":     1,
+			"title":  "The Matrix",
+			"year":   1999,
+			"genres": []string{"action", "sci-fi"},
+		},
+	}
+
+	header := make(http.Header)
+
+	for b.Loop() {
+		w := httptest.NewRecorder()
+
+		err := app.writeJSON(
+			w,
+			http.StatusOK,
+			data,
+			header,
+		)
+
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkJSONMarshal(b *testing.B) {
+	data := envelope{
+		"movie": map[string]any{
+			"id":     1,
+			"title":  "The Matrix",
+			"year":   1999,
+			"genres": []string{"action", "sci-fi"},
+		},
+	}
+
+	for b.Loop() {
+		_, err := json.Marshal(data)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkJSONMarshalIndent(b *testing.B) {
+	data := envelope{
+		"movie": map[string]any{
+			"id":     1,
+			"title":  "The Matrix",
+			"year":   1999,
+			"genres": []string{"action", "sci-fi"},
+		},
+	}
+
+	for b.Loop() {
+		_, err := json.MarshalIndent(data, "", "\t")
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkReadJSON(b *testing.B) {
+	app := newTestApplicationBench(b)
+
+	tests := []struct {
+		name string
+		body []byte
+	}{
+		{
+			name: "small",
+			body: []byte(`{"name":"test"}`),
+		},
+		{
+			name: "large",
+			body: []byte(fmt.Sprintf(
+				`{"name":"test","description":"%s"}`,
+				strings.Repeat("x", 10000),
+			)),
+		},
+	}
+
+	for _, tt := range tests {
+
+		b.Run(tt.name, func(b *testing.B) {
+
+			for b.Loop() {
+
+				req := httptest.NewRequest(
+					http.MethodPost,
+					"/",
+					bytes.NewReader(tt.body),
+				)
+
+				w := httptest.NewRecorder()
+
+				var dst map[string]any
+
+				err := app.readJSON(w, req, &dst)
+
+				if err != nil {
+					b.Fatal(err)
+				}
+			}
+		})
 	}
 }

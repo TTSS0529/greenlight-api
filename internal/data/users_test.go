@@ -171,3 +171,27 @@ func TestUser_IsAnonymous(t *testing.T) {
 		t.Error("unexpected anonymous")
 	}
 }
+
+func BenchmarkPasswordSet(b *testing.B) {
+	for b.Loop() {
+		var p password
+		if err := p.Set("password123"); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkPasswordMatches(b *testing.B) {
+	var p password
+
+	if err := p.Set("password123"); err != nil {
+		b.Fatal(err)
+	}
+
+	for b.Loop() {
+		ok, err := p.Matches("password123")
+		if err != nil || !ok {
+			b.Fatal(err)
+		}
+	}
+}

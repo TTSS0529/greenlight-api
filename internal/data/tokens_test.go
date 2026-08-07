@@ -93,3 +93,17 @@ func TestValidateTokenPlaintext(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkGenerateToken(b *testing.B) {
+	userID := int64(1)
+	scope := ScopeActivation
+
+	b.ResetTimer()
+
+	for b.Loop() {
+		_, err := generateToken(userID, time.Hour, scope)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}

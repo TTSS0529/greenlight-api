@@ -1,5 +1,5 @@
 # greenlight-api
-A RESTful movie catalog API built with Go, PostgreSQL, JWT authentication, rate limiting and background processing.
+A RESTful movie catalog API built with Go, PostgreSQL, authentication, rate limiting and background processing.
 
 ## Testing Strategy
 
@@ -13,3 +13,10 @@ I chose integration tests for the data layer because they verify:
 - constraints
 
 In a larger production system, I would combine integration tests with unit tests using mocks for isolated business logic.
+
+## Performance Benchmarks
+
+- JSON marshaling: ~1.3μs/op (small payload)
+- JSON marshaling with indentation: ~2.3μs/op
+- Token generation: ~350ns/op
+- Password hashing (bcrypt): ~270ms/op

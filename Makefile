@@ -69,6 +69,11 @@ vendor:
 test:
 	docker compose -f docker-compose.test.yml up --abort-on-container-exit --exit-code-from test
 
+## benchmark: run benchmark tests
+.PHONY: benchmark
+benchmark:
+	go test -bench=. -benchmem ./...
+
 # ==================================================================================== #
 # BUILD
 # ==================================================================================== #
