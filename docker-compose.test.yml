@@ -4,7 +4,7 @@ services:
     container_name: greenlight-postgres-test
     environment:
       POSTGRES_USER: greenlight
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: pa55word
       POSTGRES_DB: greenlight_test
     healthcheck:
       test:
@@ -23,7 +23,7 @@ services:
     volumes:
       - .:/app
     environment:
-      GREENLIGHT_DB_DSN: postgres://greenlight:${POSTGRES_PASSWORD}@db-test:5432/greenlight_test?sslmode=disable
+      GREENLIGHT_DB_DSN: postgres://greenlight:pa55word@db-test:5432/greenlight_test?sslmode=disable
     depends_on:
       db-test:
         condition: service_healthy
