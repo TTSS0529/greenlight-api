@@ -13,12 +13,7 @@ import (
 )
 
 func TestCreateAuthenticationTokenHandler(t *testing.T) {
-	app := newIntegrationApplication(t)
-	truncateTables(t, app.models.Tokens.DB)
-
-	ts := httptest.NewServer(app.routes())
-	defer ts.Close()
-	user := createTestUser(t, app.models.Tokens.DB, "Test user", "test@example.com")
+	email := "test@example.com"
 
 	tests := []struct {
 		name       string
@@ -28,13 +23,13 @@ func TestCreateAuthenticationTokenHandler(t *testing.T) {
 	}{
 		{
 			name:       "valid credentials",
-			email:      user.Email,
+			email:      email,
 			password:   "password123",
 			wantStatus: http.StatusCreated,
 		},
 		{
 			name:       "wrong password",
-			email:      user.Email,
+			email:      email,
 			password:   "wrongpassword",
 			wantStatus: http.StatusUnauthorized,
 		},
@@ -52,7 +47,7 @@ func TestCreateAuthenticationTokenHandler(t *testing.T) {
 		},
 		{
 			name:       "empty password",
-			email:      user.Email,
+			email:      email,
 			password:   "",
 			wantStatus: http.StatusUnprocessableEntity,
 		},
@@ -61,6 +56,12 @@ func TestCreateAuthenticationTokenHandler(t *testing.T) {
 	for _, tt := range tests {
 
 		t.Run(tt.name, func(t *testing.T) {
+			app := newIntegrationApplication(t)
+			truncateTables(t, app.models.Tokens.DB)
+
+			ts := httptest.NewServer(app.routes())
+			defer ts.Close()
+			createTestUser(t, app.models.Tokens.DB, "Test user", email)
 			input := map[string]string{
 				"email":    tt.email,
 				"password": tt.password,

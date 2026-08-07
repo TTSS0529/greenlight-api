@@ -39,14 +39,15 @@ func TestUserModel_InsertDuplicateEmail(t *testing.T) {
 	truncateTables(t, db)
 	model := UserModel{DB: db}
 	u1 := createTestUser(t, db, "Alice", "alice@test.com")
-	u2 := &User{
-		Name:  "Bob",
-		Email: u1.Email,
-	}
-	if err := u2.Password.Set("password123"); err != nil {
-		t.Fatal(err)
-	}
-	err := model.Insert(u2)
+	u1.Name = "Bob"
+	// u2 := &User{
+	// 	Name:  "Bob",
+	// 	Email: u1.Email,
+	// }
+	// if err := u2.Password.Set("password123"); err != nil {
+	// 	t.Fatal(err)
+	// }
+	err := model.Insert(u1)
 	if !errors.Is(err, ErrDuplicateEmail) {
 		t.Fatalf("expected ErrDuplicateEmail got %v", err)
 	}

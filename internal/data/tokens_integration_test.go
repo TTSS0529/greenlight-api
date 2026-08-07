@@ -91,15 +91,15 @@ func TestTokenModel_DeleteAllForUser(t *testing.T) {
 	defer db.Close()
 	truncateTables(t, db)
 	model := TokenModel{DB: db}
-	createTestUser(t, db, "Alice", "alice@example.com")
-	createTestUser(t, db, "Bob", "Bob@example.com")
+	user1 := createTestUser(t, db, "Alice", "alice@example.com")
+	user2 := createTestUser(t, db, "Bob", "Bob@example.com")
 	tests := []struct {
 		userID int64
 		scope  string
 	}{
-		{1, ScopeActivation},
-		{1, ScopeAuthentication},
-		{2, ScopeActivation},
+		{user1.ID, ScopeActivation},
+		{user1.ID, ScopeAuthentication},
+		{user2.ID, ScopeActivation},
 	}
 	for _, tt := range tests {
 		token, err := generateToken(tt.userID, time.Hour, tt.scope)
@@ -110,18 +110,18 @@ func TestTokenModel_DeleteAllForUser(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	err := model.DeleteAllForUser(ScopeActivation, 1)
+	err := model.DeleteAllForUser(ScopeActivation, user1.ID)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if got := tokenCount(t, db, 1, ScopeActivation); got != 0 {
+	if got := tokenCount(t, db, user1.ID, ScopeActivation); got != 0 {
 		t.Fatalf("expected 0 activation tokens for user 1, got %d", got)
 	}
-	if got := tokenCount(t, db, 1, ScopeAuthentication); got != 1 {
+	if got := tokenCount(t, db, user1.ID, ScopeAuthentication); got != 1 {
 		t.Fatalf("expected 1 authentication token for user 1, got %d", got)
 	}
-	if got := tokenCount(t, db, 2, ScopeActivation); got != 1 {
+	if got := tokenCount(t, db, user2.ID, ScopeActivation); got != 1 {
 		t.Fatalf("expected 1 activation token for user 2, got %d", got)
 	}
 }

@@ -79,6 +79,7 @@ func TestMovieModel_Get(t *testing.T) {
 func TestMovieModel_Get_NotFound(t *testing.T) {
 	db := newTestDB(t)
 	defer db.Close()
+	truncateTables(t, db)
 	model := MovieModel{DB: db}
 	_, err := model.Get(999)
 	if !errors.Is(err, ErrRecordNotFound) {

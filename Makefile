@@ -67,6 +67,8 @@ vendor:
 ## test: run integration tests
 .PHONY: test
 test:
+	docker compose -f docker-compose.test.yml down -v
+	docker compose -f docker-compose.test.yml build --no-cache test
 	docker compose -f docker-compose.test.yml up --abort-on-container-exit --exit-code-from test
 
 ## benchmark: run benchmark tests
