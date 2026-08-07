@@ -1,4 +1,15 @@
 :80 {
     encode gzip
-    reverse_proxy api:4000
+
+    # The /debug/vars endpoint exposes Go runtime metrics through expvar.
+    # It is blocked by default to avoid exposing internal information.
+    # Remove the following block for local development access.
+    @metrics path /debug/vars
+    handle @metrics {
+    respond 404
+    }
+    
+    handle {
+        reverse_proxy api:4000
+    }
 }

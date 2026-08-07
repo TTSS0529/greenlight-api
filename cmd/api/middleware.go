@@ -17,6 +17,13 @@ import (
 	"golang.org/x/time/rate"
 )
 
+var (
+	totalRequestsReceived           = expvar.NewInt("total_requests_received")
+	totalResponsesSent              = expvar.NewInt("total_responses_sent")
+	totalProcessingTimeMicroseconds = expvar.NewInt("total_processing_time_μs")
+	totalResponsesSentByStatus      = expvar.NewMap("total_responses_sent_by_status")
+)
+
 func (app *application) recoverPanic(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
@@ -38,6 +45,18 @@ func (app *application) rateLimit(next http.Handler) http.Handler {
 		mu      sync.Mutex
 		clients = make(map[string]*client)
 	)
+	// NOTE:
+	// The cleanup goroutine is started when the middleware is created and runs for
+	// the lifetime of the application. This is acceptable because the middleware
+	// is initialized only once during server startup.
+	//
+	// However, this design couples the goroutine's lifecycle to the process and
+	// makes the middleware harder to test, since each new middleware instance
+	// starts another long-lived goroutine.
+	//
+	// In a larger production system, this logic should be extracted into a
+	// dedicated rateLimiter type with explicit Start/Close (or context.Context)
+	// lifecycle management so background goroutines can be shut down cleanly.
 	go func() {
 		for {
 			time.Sleep(time.Minute)
@@ -169,10 +188,6 @@ func (app *application) enableCORS(next http.Handler) http.Handler {
 }
 
 func (app *application) metrics(next http.Handler) http.Handler {
-	totalRequestsReceived := expvar.NewInt("total_requests_received")
-	totalResponsesSent := expvar.NewInt("total_responses_sent")
-	totalProcessingTimeMicroseconds := expvar.NewInt("total_processing_time_μs")
-	totalResponsesSentByStatus := expvar.NewMap("total_responses_sent_by_status")
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		totalRequestsReceived.Add(1)
 		metrics := httpsnoop.CaptureMetrics(next, w, r)
