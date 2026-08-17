@@ -82,7 +82,7 @@ func insertTestMovie(t *testing.T, app *application) *data.Movie {
 	return movie
 }
 
-func insertMulTestMovies(t *testing.T, app *application) {
+func insertMulTestMovies(t *testing.T, app *application) []*data.Movie {
 	t.Helper()
 
 	movies := []*data.Movie{
@@ -112,6 +112,8 @@ func insertMulTestMovies(t *testing.T, app *application) {
 			t.Fatalf("insert movie: %v", err)
 		}
 	}
+
+	return movies
 }
 
 func addPathParam(t *testing.T, req *http.Request, key, value string) *http.Request {

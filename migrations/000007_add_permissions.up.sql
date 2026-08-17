@@ -3,8 +3,8 @@ CREATE TABLE IF NOT EXISTS permissions (
     code text NOT NULL
 );
 CREATE TABLE IF NOT EXISTS users_permissions (
-    user_id bigint NOT NULL REFERENCES users ON DELETE CASCADE,
-    permission_id bigint NOT NULL REFERENCES permissions ON DELETE CASCADE,
+    user_id bigint NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    permission_id bigint NOT NULL REFERENCES permissions(id) ON DELETE CASCADE,
     PRIMARY KEY (user_id, permission_id)
 );
 -- Add the two permissions to the table.

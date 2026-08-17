@@ -59,3 +59,23 @@ func createTestUser(t *testing.T, db *sql.DB, name, email string) *User {
 	}
 	return user
 }
+
+func createTestMovie(t *testing.T, db *sql.DB, title string) *Movie {
+	t.Helper()
+
+	model := MovieModel{DB: db}
+
+	movie := &Movie{
+		Title:   title,
+		Year:    2020,
+		Runtime: 120,
+		Genres:  []string{"action", "drama"},
+	}
+
+	err := model.Insert(movie)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return movie
+}

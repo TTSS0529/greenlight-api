@@ -33,5 +33,5 @@ services:
       - |
         go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
         migrate -path ./migrations \
-          -database "$$GREENLIGHT_DB_DSN" up
+          -database "$$GREENLIGHT_DB_DSN" up &&
         go test -v -p 1 -tags=integration -race -vet=off ./...
