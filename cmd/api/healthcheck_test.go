@@ -39,7 +39,7 @@ func TestHealthcheckHandler(t *testing.T) {
 		t.Fatalf("system_info is not an object")
 	}
 
-	if got := systemInfo["envirnment"]; got != "test" {
+	if got := systemInfo["environment"]; got != "test" {
 		t.Errorf("got environment %v want test", got)
 	}
 
