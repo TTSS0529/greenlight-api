@@ -95,7 +95,7 @@ build/api:
 # DEPLOY
 # ==================================================================================== #
 
-## docker/deploy: build docker images, run database migrations and start services
+## docker/build: build docker images, run database migrations and start services
 .PHONY: docker/build
 docker/build:
 	docker compose build \
